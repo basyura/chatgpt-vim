@@ -1,15 +1,3 @@
-// ==UserScript==
-// @name         ChatGPT
-// @namespace    http://basyura.org
-// @version      0.1
-// @description  vim like in chatgpt
-// @author       basyura
-// @match        https://chat.openai.com/*
-// @match        https://chatgpt.com/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=chatgpt.com
-// @grant        none
-// ==/UserScript==
-
 (function () {
   "use strict";
 
@@ -72,9 +60,12 @@
       return;
     }
 
-    let ele = document.querySelector("div.contents button[type='submit']");
+    const ele = document.querySelector("div.contents button[type='submit']");
     if (ele != null) {
       ele.click();
+      setTimeout(() => {
+        e.target.innerHTML = "";
+      }, 50);
       setTimeout(() => ele.blur(), 500);
     }
 
