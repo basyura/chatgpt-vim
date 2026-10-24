@@ -9,9 +9,9 @@
 }
 
 /* サイドバーのボタン */
-a[data-testid="sidebar-item-projects"],
-a[data-testid="apps-button"],
-a[data-testid="sidebar-item-tasks"] {
+a[data-testid='sidebar-item-projects'],
+a[data-testid='apps-button'],
+a[data-testid='sidebar-item-tasks'] {
   display: none;
 }
 
@@ -22,17 +22,25 @@ a[data-testid="sidebar-item-tasks"] {
 
 /* プロファイルボタン */
 div.bg-\(--sidebar-surface-primary\),
-div[data-testid="accounts-profile-button"] {
+div[data-testid='accounts-profile-button'] {
   padding: 0px;
 }
 
-button[aria-label="アプリをダウンロード"] {
+button[aria-label='アプリをダウンロード'] {
   display: none;
 }
 
 /* テキストボックスのツールバー */
-div.sticky > div[role="toolbar"] {
+div.sticky > div[role='toolbar'] {
   display: none;
+}
+
+/* 会話の入力欄下の余白を詰め、端末のセーフエリアは確保する */
+.thread-scroll-container:has(form[data-composer-placement='thread']) {
+  --thread-composer-bottom-inset: max(
+    0px,
+    env(safe-area-inset-bottom)
+  ) !important;
 }
 
 #thread-bottom form {
@@ -46,11 +54,11 @@ div.sticky > div[role="toolbar"] {
   border-radius: 28px;
 }
 
-button[aria-label="音声入力を開始"] {
+button[aria-label='音声入力を開始'] {
   display: none;
 }
 
-button[aria-label="音声モードを開始する"] {
+button[aria-label='音声モードを開始する'] {
   display: none;
 }
 
@@ -70,7 +78,7 @@ strong {
 
 h2::before {
   color: rgba(250, 207, 78, 0.8) !important;
-  content: "## ";
+  content: '## ';
 }
 
 /* コードブロック ヘッダー */
