@@ -78,7 +78,6 @@
     }
 
     if (e.ctrlKey && e.key == 'm') {
-      console.log('M Enter');
       dispatchEvent(e, 'Enter');
       return;
     }
@@ -116,7 +115,6 @@
   const normalAction = (e) => {
     const id = getKeyId(e);
     const action = keyActions[id];
-    console.log(e.key, '→', id, '=', action);
 
     if (!action) {
       return;
@@ -285,13 +283,6 @@
   };
 
   const getScrollContainer = () => {
-    /*
-        const timeline = document.querySelector("[data-app-action-timeline-scroll]");
-        if (timeline) {
-            console.log("timeline")
-            return timeline;
-        }
-*/
     const pane =
       Array.from(document.querySelectorAll('main, main *'))
         .filter((element) => {
@@ -310,15 +301,10 @@
       return pane;
     }
 
-    console.log('pane is null');
-
     const first = Array.from(document.querySelectorAll('*')).find(
       (e) => e.scrollTop !== 0
     );
 
-    if (first == null) {
-      console.log('first is null');
-    }
     return first;
   };
 
