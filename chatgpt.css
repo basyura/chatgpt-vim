@@ -38,20 +38,25 @@ div.sticky > div[role='toolbar'] {
 /* 会話の入力欄下の余白を詰め、端末のセーフエリアは確保する */
 .thread-scroll-container:has(form[data-composer-placement='thread']) {
   --thread-composer-bottom-inset: max(
-    0px,
+    6px,
     env(safe-area-inset-bottom)
   ) !important;
 }
 
 #thread-bottom form {
-  border: 2px solid #303030;
+  border: 2px solid var(--color-text-user-message);
   border-radius: 28px;
   margin-bottom: 10px;
 }
 
 #thread-bottom form:focus-within {
-  border: 2px solid #f3f3f3;
+  border: 2px solid var(--color-text-user-message);
   border-radius: 28px;
+}
+
+/* 現行の入力欄は標準の影をユーザーメッセージ色の内枠に置き換える */
+form[data-chatgpt-composer] [data-composer-surface-variant] {
+  box-shadow: inset 0 0 0 2px var(--color-text-user-message) !important;
 }
 
 button[aria-label='音声入力を開始'] {
