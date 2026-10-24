@@ -75,6 +75,7 @@
   const normalAction = (e) => {
     const id = getKeyId(e);
     const action = keyActions[id];
+    console.log(e.key, '→', id, '=', action);
 
     if (!action) {
       return;
@@ -141,9 +142,9 @@
     }
   };
   const getTextArea = () => {
-    // ラベル名に依存せず、入力欄と contenteditable 属性を持つ要素を文書順に集める。
+    // ラベル名に依存せず、入力欄と contenteditable="true" の要素を文書順に集める。
     const inputElements = Array.from(
-      document.querySelectorAll('input,textarea,*[contenteditable]')
+      document.querySelectorAll('input,textarea,*[contenteditable="true"]')
     ).filter((ele) => {
       // ボタンやチェックボックスなどを候補から除外する。
       const isEditable =
