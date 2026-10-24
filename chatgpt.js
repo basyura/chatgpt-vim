@@ -3,6 +3,42 @@
 
   let gCount = 0;
   let keyDownTimer = null;
+  let inputRequested = false;
+  let conversationPath = globalThis.location.pathname;
+  let suppressComposerFocus = false;
+
+  const composerSelector = '#prompt-textarea, [aria-label="ChatGPT に聞く"]';
+
+  const isNewConversation = (path = globalThis.location.pathname) => {
+    return !/^\/(?:c|uc)\/[^/]+/.test(path);
+  };
+
+  const blurComposer = () => {
+    const active = document.activeElement;
+    if (suppressComposerFocus && active?.closest?.(composerSelector)) {
+      active.blur();
+    }
+  };
+
+  const checkConversationPath = () => {
+    const path = globalThis.location.pathname;
+    if (path === conversationPath) {
+      return;
+    }
+
+    // 新規会話の送信で会話 ID が付いた後の、自動フォーカスを解除する。
+    suppressComposerFocus =
+      isNewConversation(conversationPath) && !isNewConversation(path);
+    conversationPath = path;
+    blurComposer();
+  };
+
+  const requestInput = () => {
+    // 定期確認より先にキー操作が来た場合も、最新の URL を反映する。
+    checkConversationPath();
+    suppressComposerFocus = false;
+    inputRequested = true;
+  };
 
   const keyActions = {
     j: (e) => scroll(e, 100),
@@ -60,16 +96,21 @@
       return;
     }
 
+    const isNew = isNewConversation();
     const ele = document.querySelector("div.contents button[type='submit']");
     if (ele != null) {
       ele.click();
       setTimeout(() => {
         e.target.innerHTML = '';
       }, 50);
-      setTimeout(() => ele.blur(), 500);
+      if (!isNew) {
+        setTimeout(() => ele.blur(), 500);
+      }
     }
 
-    setTimeout(() => e.target.blur(), 200);
+    if (!isNew) {
+      setTimeout(() => e.target.blur(), 200);
+    }
   };
 
   const normalAction = (e) => {
@@ -200,6 +241,8 @@
     if (!ele) {
       return;
     }
+    // 入力再開後に、送信完了の監視がフォーカスを解除しないようにする。
+    requestInput();
     ele.focus();
     // 実際にフォーカスされた要素が select() に対応していれば、内容を選択する。
     if (document.activeElement.select) {
@@ -280,7 +323,27 @@
   };
 
   globalThis.addEventListener('keydown', attachEvent, { capture: true });
-
+  globalThis.addEventListener(
+    'focusin',
+    () => {
+      // URL 更新直後や、入力欄の差し替え後のフォーカスにも対応する。
+      checkConversationPath();
+      blurComposer();
+    },
+    { capture: true }
+  );
+  // pushState / replaceState による変更も、ページ側の実装に依存せず検知する。
+  globalThis.setInterval(checkConversationPath, 100);
+  globalThis.addEventListener(
+    'pointerdown',
+    (e) => {
+      // クリックによるフォーカス移動より先に、入力開始を記録する。
+      if (e.target?.closest?.(composerSelector)) {
+        requestInput();
+      }
+    },
+    { capture: true }
+  );
   let initialized = false;
 
   let iniFunc = () => {
@@ -302,7 +365,9 @@
       document.querySelector('#composer-submit-button').click();
     }
 
-    document.activeElement.blur();
+    if (!inputRequested) {
+      document.activeElement.blur();
+    }
     initialized = true;
   };
 
