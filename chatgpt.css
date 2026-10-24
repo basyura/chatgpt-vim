@@ -1,0 +1,89 @@
+/* ChatGPT の回答は必ずしも ・・・ */
+.text-codex-description {
+  display: none;
+}
+
+/* テキストボックス下の提案 */
+.group\/home-suggestions {
+  display: none;
+}
+
+/* サイドバーのボタン */
+a[data-testid="sidebar-item-projects"],
+a[data-testid="apps-button"],
+a[data-testid="sidebar-item-tasks"] {
+  display: none;
+}
+
+/* サイドバーのセクション間隔を詰める */
+.mb-\[var\(--sidebar-expanded-section-margin-bottom\)\] {
+  margin-top: -20px;
+}
+
+/* プロファイルボタン */
+div.bg-\(--sidebar-surface-primary\),
+div[data-testid="accounts-profile-button"] {
+  padding: 0px;
+}
+
+button[aria-label="アプリをダウンロード"] {
+  display: none;
+}
+
+/* テキストボックスのツールバー */
+div.sticky > div[role="toolbar"] {
+  display: none;
+}
+
+#thread-bottom form {
+  border: 2px solid #303030;
+  border-radius: 28px;
+  margin-bottom: 10px;
+}
+
+#thread-bottom form:focus-within {
+  border: 2px solid #f3f3f3;
+  border-radius: 28px;
+}
+
+button[aria-label="音声入力を開始"] {
+  display: none;
+}
+
+button[aria-label="音声モードを開始する"] {
+  display: none;
+}
+
+#thread-bottom + .text-token-text-secondary {
+  color: #212121;
+  display: none;
+}
+
+/* スクロール時に枠が表示されるのを回避 */
+.thread-scroll-container:focus-visible {
+  box-shadow: none !important;
+}
+
+strong {
+  color: #facf4e;
+}
+
+h2::before {
+  color: rgba(250, 207, 78, 0.8) !important;
+  content: "## ";
+}
+
+/* コードブロック ヘッダー */
+.h-full.w-full:has(#code-block-viewer) > div.sticky div {
+  background-color: #464646;
+  color: darkgray;
+  height: 30px;
+  padding-bottom: 0px;
+  margin-bottom: 10px;
+}
+
+/* コードブロック */
+div:has(> * > * > * > #code-block-viewer) {
+  border: 1px solid #464646;
+  border-radius: 0px;
+}
