@@ -27,3 +27,6 @@ ChatGPT を Vim 風のキーバインドで操作する Chrome 拡張です。
 | `Enter` / `Ctrl+m`      | `Shift+Enter` を送出して改行       |
 | `Shift+Enter`           | 通常の改行操作                     |
 | `Ctrl+Enter` / `Ctrl+]` | 送信ボタンを押し、フォーカスを外す |
+
+送信時はキーイベントの既定動作と伝播を停止し、ChatGPT 側のキー処理との重複を防ぎます。
+入力欄のクリアは ChatGPT 側の送信処理に任せます。

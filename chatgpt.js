@@ -95,13 +95,14 @@
       return;
     }
 
+    // 送信後に ChatGPT 側でも同じキーを処理しないようにする。
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
     const isNew = isNewConversation();
     const ele = document.querySelector("div.contents button[type='submit']");
     if (ele != null) {
       ele.click();
-      setTimeout(() => {
-        e.target.innerHTML = '';
-      }, 50);
       if (!isNew) {
         setTimeout(() => ele.blur(), 500);
       }
