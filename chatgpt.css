@@ -87,6 +87,9 @@ strong {
   color: #facf4e;
 }
 
+h2 {
+  color: #FACF53 !important;
+}
 h2::before {
   color: rgba(250, 207, 78, 0.8) !important;
   content: '## ';
