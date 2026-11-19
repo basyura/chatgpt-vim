@@ -54,7 +54,10 @@
     F12: 'passthrough', // DevTools を開くため,
   };
 
+  const submitEvents = new WeakSet();
+
   const attachEvent = (e) => {
+    if (submitEvents.has(e)) return;
     const placeholder = e.srcElement.placeholder;
     if (placeholder != null && placeholder.indexOf('検索') >= 0) {
       return;
@@ -95,21 +98,19 @@
       return;
     }
 
-    const isNew = isNewConversation();
-    const ele = document.querySelector("div.contents button[type='submit']");
-    if (ele != null) {
-      ele.click();
-      setTimeout(() => {
-        e.target.innerHTML = '';
-      }, 50);
-      if (!isNew) {
-        setTimeout(() => ele.blur(), 500);
-      }
-    }
-
-    if (!isNew) {
-      setTimeout(() => e.target.blur(), 200);
-    }
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    // ChatGPT 標準の Enter 処理に送信と下書きの消去を任せる。
+    const submitEvent = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      bubbles: true,
+      cancelable: true,
+    });
+    submitEvents.add(submitEvent);
+    e.target.dispatchEvent(submitEvent);
+    if (submitEvent.defaultPrevented) e.target.blur();
   };
 
   const normalAction = (e) => {
