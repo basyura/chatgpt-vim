@@ -9,10 +9,6 @@
 
   const composerSelector = '#prompt-textarea, [aria-label="ChatGPT に聞く"]';
 
-  const isNewConversation = (path = globalThis.location.pathname) => {
-    return !/^\/(?:c|uc)\/[^/]+/.test(path);
-  };
-
   const blurComposer = () => {
     const active = document.activeElement;
     if (suppressComposerFocus && active?.closest?.(composerSelector)) {
@@ -26,9 +22,8 @@
       return;
     }
 
-    // 新規会話の送信で会話 ID が付いた後の、自動フォーカスを解除する。
-    suppressComposerFocus =
-      isNewConversation(conversationPath) && !isNewConversation(path);
+    // 会話を開いた直後は、入力操作があるまで自動フォーカスを解除する。
+    suppressComposerFocus = /^\/(?:c|uc)\/[^/]+/.test(path);
     conversationPath = path;
     blurComposer();
   };
@@ -249,7 +244,6 @@
     if (!ele) {
       return;
     }
-    // 入力再開後に、送信完了の監視がフォーカスを解除しないようにする。
     requestInput();
     ele.focus();
     // 実際にフォーカスされた要素が select() に対応していれば、内容を選択する。
