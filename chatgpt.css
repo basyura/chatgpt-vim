@@ -78,8 +78,13 @@ button[aria-label='音声モードを開始する'] {
   display: none;
 }
 
-/* スクロール時に枠が表示されるのを回避 */
-.thread-scroll-container:focus-visible {
+/* 会話にフォーカスが戻ったとき、重ねて表示される緑枠を消す */
+[class~='peer-focus-visible/transcript:ring-2'] {
+  --tw-ring-shadow: 0 0 #0000 !important;
+}
+
+.thread-scroll-container {
+  outline: none !important;
   box-shadow: none !important;
 }
 
