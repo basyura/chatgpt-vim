@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  let bottomScrollController;
+  let scrollController;
   let gCount = 0;
   let keyDownTimer = null;
   let inputRequested = false;
@@ -25,6 +25,7 @@
 
     // 会話を開いた直後は、入力操作があるまで自動フォーカスを解除する。
     suppressComposerFocus = /^\/(?:c|uc)\/[^/]+/.test(path);
+    scrollController?.abort();
     conversationPath = path;
     blurComposer();
   };
@@ -53,7 +54,7 @@
   const submitEvents = new WeakSet();
 
   const attachEvent = (e) => {
-    bottomScrollController?.abort();
+    scrollController?.abort();
     if (submitEvents.has(e)) return;
     const placeholder = e.srcElement.placeholder;
     if (placeholder != null && placeholder.indexOf('検索') >= 0) {
@@ -149,15 +150,32 @@
     if (gCount === 2) {
       gCount = 0;
       clearTimeout(keyDownTimer);
-      const container = getScrollContainer();
-      if (container) {
-        notifyUpwardScroll(container, -container.scrollHeight);
-        container.scrollTop = -container.scrollHeight;
-      } else if (document.scrollingElement) {
-        document.scrollingElement.scrollTop = 0;
-      } else {
+      const container = getConversationScrollContainer();
+      if (!container) {
         globalThis.scrollTo({ top: 0, behavior: 'instant' });
+        return;
       }
+
+      notifyUpwardScroll(container, -container.scrollHeight);
+      const controller = startScrollTracking();
+      const path = globalThis.location.pathname;
+      const followTop = () => {
+        if (!container.isConnected || globalThis.location.pathname !== path) {
+          controller.abort();
+          return;
+        }
+        container.scrollTo({
+          top: -container.scrollHeight,
+          behavior: 'instant',
+        });
+      };
+      // 履歴の追加でブラウザーが表示位置を補正したら、再び先頭へ移動する。
+      const target =
+        container === document.scrollingElement ? document : container;
+      target.addEventListener('scroll', followTop, {
+        signal: controller.signal,
+      });
+      followTop();
       return;
     }
 
@@ -181,7 +199,7 @@
     return mods.length ? `${mods.join('+')}+${base}` : base;
   };
 
-  const scrollToBottom = () => {
+  const getConversationScrollContainer = () => {
     // 長いコードブロックよりも、メッセージ全体を包むスクロール領域を優先する。
     let container = document.querySelector(
       '[data-message-author-role]'
@@ -195,11 +213,12 @@
     ) {
       container = container.parentElement;
     }
-    container ??= getScrollContainer() ?? document.scrollingElement;
-    if (!container) return;
+    return container ?? getScrollContainer() ?? document.scrollingElement;
+  };
 
+  const startScrollTracking = () => {
     const controller = new AbortController();
-    bottomScrollController = controller;
+    scrollController = controller;
     const stop = () => controller.abort();
     for (const type of ['wheel', 'pointerdown', 'touchstart']) {
       globalThis.addEventListener(type, stop, {
@@ -209,6 +228,13 @@
       });
     }
 
+    return controller;
+  };
+
+  const scrollToBottom = () => {
+    const container = getConversationScrollContainer();
+    if (!container) return;
+    const controller = startScrollTracking();
     const path = globalThis.location.pathname;
     let settledSince = performance.now();
     const deadline = settledSince + 3000;
@@ -221,7 +247,7 @@
         globalThis.location.pathname !== path ||
         now >= deadline
       ) {
-        stop();
+        controller.abort();
         return;
       }
       if (
@@ -235,7 +261,7 @@
         settledSince = now;
       }
       if (now - settledSince >= 500) {
-        stop();
+        controller.abort();
         return;
       }
       requestAnimationFrame(followBottom);
