@@ -1,6 +1,7 @@
 (function () {
   'use strict';
 
+  let bottomScrollController;
   let gCount = 0;
   let keyDownTimer = null;
   let inputRequested = false;
@@ -39,7 +40,7 @@
     j: (e) => scroll(e, 100),
     k: (e) => scroll(e, -100),
     g: (e) => scrollToTop(e),
-    'shift+g': (e) => scrollToBottom(e),
+    'shift+g': () => scrollToBottom(),
     i: (e) => changeToInsertMode(e),
     s: (e) => changeToInsertMode(e),
     'ctrl+d': (e) => scroll(e, 500),
@@ -52,6 +53,7 @@
   const submitEvents = new WeakSet();
 
   const attachEvent = (e) => {
+    bottomScrollController?.abort();
     if (submitEvents.has(e)) return;
     const placeholder = e.srcElement.placeholder;
     if (placeholder != null && placeholder.indexOf('検索') >= 0) {
@@ -179,12 +181,68 @@
     return mods.length ? `${mods.join('+')}+${base}` : base;
   };
 
-  const scrollToBottom = (e) => {
-    const container = getScrollContainer();
-    if (container) {
-      container.scrollTop = container.scrollHeight;
+  const scrollToBottom = () => {
+    // 長いコードブロックよりも、メッセージ全体を包むスクロール領域を優先する。
+    let container = document.querySelector(
+      '[data-message-author-role]'
+    )?.parentElement;
+    while (
+      container &&
+      !(
+        container.scrollHeight > container.clientHeight &&
+        ['auto', 'scroll'].includes(getComputedStyle(container).overflowY)
+      )
+    ) {
+      container = container.parentElement;
     }
+    container ??= getScrollContainer() ?? document.scrollingElement;
+    if (!container) return;
+
+    const controller = new AbortController();
+    bottomScrollController = controller;
+    const stop = () => controller.abort();
+    for (const type of ['wheel', 'pointerdown', 'touchstart']) {
+      globalThis.addEventListener(type, stop, {
+        capture: true,
+        passive: true,
+        signal: controller.signal,
+      });
+    }
+
+    const path = globalThis.location.pathname;
+    let settledSince = performance.now();
+    const deadline = settledSince + 3000;
+    // 末尾付近の追加描画で高さが変わったら、新しい末尾まで移動する。
+    const followBottom = () => {
+      if (controller.signal.aborted) return;
+      const now = performance.now();
+      if (
+        !container.isConnected ||
+        globalThis.location.pathname !== path ||
+        now >= deadline
+      ) {
+        stop();
+        return;
+      }
+      if (
+        container.scrollHeight - container.clientHeight - container.scrollTop >
+        1
+      ) {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'instant',
+        });
+        settledSince = now;
+      }
+      if (now - settledSince >= 500) {
+        stop();
+        return;
+      }
+      requestAnimationFrame(followBottom);
+    };
+    followBottom();
   };
+
   const getTextArea = () => {
     // ラベル名に依存せず、入力欄と contenteditable="true" の要素を文書順に集める。
     const inputElements = Array.from(
