@@ -133,8 +133,16 @@
   const scroll = (e, value) => {
     const container = getScrollContainer();
     if (container) {
+      if (value < 0) notifyUpwardScroll(container, value);
       container.scrollTop += value;
     }
+  };
+
+  // 位置を変更する前に、末尾への自動追従を管理するページ側へ上方向の操作を伝える。
+  const notifyUpwardScroll = (container, deltaY) => {
+    container.dispatchEvent(
+      new WheelEvent('wheel', { deltaY, bubbles: true, cancelable: true })
+    );
   };
 
   const scrollToTop = (e) => {
@@ -146,6 +154,7 @@
       clearTimeout(keyDownTimer);
       const container = getScrollContainer();
       if (container) {
+        notifyUpwardScroll(container, -container.scrollHeight);
         container.scrollTop = -container.scrollHeight;
       } else if (document.scrollingElement) {
         document.scrollingElement.scrollTop = 0;
